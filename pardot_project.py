@@ -10,12 +10,12 @@ results_write.writerow(header_list)
 
 error_doc = open('error_log.txt', 'a')
 
-'''class Record:
+class Record:
     def __init__(self, last_name,first_name,company_name,crm_num):
         self.last_name = last_name
         self.first_name = first_name
         self.company_name = company_name
-        self.crm_num = crm_num'''
+        self.crm_num = crm_num
 
 
 def pardot_reader(error):
@@ -41,21 +41,25 @@ def pardot_reader(error):
                 company_name = row[5]
                 if crmnum == 'CRM Contact FID':
                     continue
-                elif crmnum in output_dict:
-                    try:
-                        output_dict[crmnum]['Clicks'] += 1
-
-                    except: 
-
-                        error.write(f'There was an error in {pardot_file}, with the row {last_name} {first_name}.')
-                        print(f'Error found in {pardot_file} and logged.')
 
                 else:
-                    output_dict.update(crmnum : dict([('CRM', crmnum), ('Last Name', last_name), ('First Name', first_name), ('Company', company_name), ('Clicks', 1)]))
+                    obj = Record(last_name,first_name,company_name,crmnum)
+                    if obj in output_dict:
+                         output_dict[obj] += 1
+                    else:
+                        try:
+                            output_dict.update({obj : 1})
+
+                        except: 
+
+                            error.write(f'There was an error in {pardot_file}, with the row {last_name} {first_name}.')
+                            print(f'Error found in {pardot_file} and logged.')
+
+
     print(debug_count)
 
     for k in output_dict:
-        csv_output_list = [output_dict[k]['CRM'],output_dict[k]['Last Name'],output_dict[k]['First Name'],output_dict[k]['Company'],output_dict[k][Clicks]]
+        csv_output_list = [k.crm_num, k.last_name, k.first_name, k.company_name, output_dict[k]]
         results_write.writerow(csv_output_list)
 
 pardot_reader(error_doc)
