@@ -5,17 +5,17 @@ import os
 
 results_csv = open('Pardot_Results.csv', 'w', newline='')
 results_write = csv.writer(results_csv)
-header_list = ['Last Name', 'First Name', 'Company', 'Clicks']
+header_list = ['CRM Number','Last Name', 'First Name', 'Company', 'Clicks']
 results_write.writerow(header_list)
 
 error_doc = open('error_log.txt', 'a')
 
-class Record:
+'''class Record:
     def __init__(self, last_name,first_name,company_name,crm_num):
         self.last_name = last_name
         self.first_name = first_name
         self.company_name = company_name
-        self.crm_num = crm_num
+        self.crm_num = crm_num'''
 
 
 def pardot_reader(error):
@@ -38,28 +38,24 @@ def pardot_reader(error):
                 crmnum = row[37]
                 last_name = row[2]
                 first_name = row[1]
-                company_name = row[5]
+                company_name = row[4]
                 if crmnum == 'CRM Contact FID':
                     continue
+                elif crmnum in output_dict:
+                    try:
+                        output_dict[crmnum]['Clicks'] += 1
+
+                    except: 
+
+                        error.write(f'There was an error in {pardot_file}, with the row {last_name} {first_name}.')
+                        print(f'Error found in {pardot_file} and logged.')
 
                 else:
-                    obj = Record(last_name,first_name,company_name,crmnum)
-                    if obj in output_dict:
-                         output_dict[obj] += 1
-                    else:
-                        try:
-                            output_dict.update({obj : 1})
-
-                        except: 
-
-                            error.write(f'There was an error in {pardot_file}, with the row {last_name} {first_name}.')
-                            print(f'Error found in {pardot_file} and logged.')
-
-
+                    output_dict.update({crmnum : dict([('CRM', crmnum), ('Last Name', last_name), ('First Name', first_name), ('Company', company_name), ('Clicks', 1)])})
     print(debug_count)
 
     for k in output_dict:
-        csv_output_list = [k.crm_num, k.last_name, k.first_name, k.company_name, output_dict[k]]
+        csv_output_list = [output_dict[k]['CRM'],output_dict[k]['Last Name'],output_dict[k]['First Name'],output_dict[k]['Company'],output_dict[k]['Clicks']]
         results_write.writerow(csv_output_list)
 
 pardot_reader(error_doc)
